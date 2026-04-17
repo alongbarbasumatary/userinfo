@@ -2,7 +2,6 @@ import os
 from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
-import threading
 
 TOKEN = os.getenv("BOT_TOKEN")
 PORT = int(os.environ.get("PORT", 10000))
@@ -27,21 +26,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(text)
 
-def run_bot():
-    app = Application.builder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-
-    print("🚀 Bot running...")
-    app.run_polling()
-
-# ---------- Web Server (REQUIRED FOR RENDER) ----------
+# ---------- Web Server ----------
 web = Flask(__name__)
 
 @web.route("/")
 def home():
     return "Bot is running 🚀"
 
+def main():
+    app = Application.builder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+
+    # start bot WITHOUT blocking Flask
+    app.run_polling(close_loop=False)
+
 if __name__ == "__main__":
-    threading.Thread(target=run_bot).start()
+    import threading
+
+    threading.Thread(target=main).start()
 
     web.run(host="0.0.0.0", port=PORT)
