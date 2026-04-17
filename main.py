@@ -1,21 +1,20 @@
 import os
-import asyncio
-from flask import Flask
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
+# 🔐 ENV TOKEN
 TOKEN = os.getenv("BOT_TOKEN")
-PORT = int(os.environ.get("PORT", 10000))
 
 if not TOKEN:
-    print("BOT_TOKEN missing")
+    print("❌ BOT_TOKEN not set")
     exit(1)
 
-# ---------- Telegram ----------
+# 🪪 /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
 
-    text = f"""🤖 Info Bot
+    text = f"""
+🤖 Info Bot
 
 🪪 Telegram User Info
 
@@ -23,34 +22,51 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 👤 Name: {u.first_name}
 🔗 Username: @{u.username if u.username else "None"}
 🌐 Language: {u.language_code}
+
+📌 Forward message → sender ID
+📞 Send contact → contact ID
 """
 
     await update.message.reply_text(text)
 
-async def run_bot():
+# 🧠 handler
+async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.message
+
+    if not msg:
+        return
+
+    try:
+        # 👤 forwarded user
+        if msg.forward_from:
+            await msg.reply_text(f"🆔 Sender ID: {msg.forward_from.id}")
+
+        # 📢 channel
+        elif msg.forward_from_chat:
+            await msg.reply_text(f"📢 Channel ID: {msg.forward_from_chat.id}")
+
+        # 📞 contact
+        elif msg.contact:
+            await msg.reply_text(f"📞 Contact ID: {msg.contact.user_id}")
+
+        # 🆔 normal message
+        else:
+            await msg.reply_text(f"🆔 Your ID: {msg.from_user.id}")
+
+    except:
+        await msg.reply_text("⚠️ Error")
+
+def main():
     app = Application.builder().token(TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.ALL, handle))
 
     print("🚀 Bot running...")
 
-    # IMPORTANT FIX
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling()
-
-    # keep alive forever
-    await asyncio.Event().wait()
-
-# ---------- Flask ----------
-web = Flask(__name__)
-
-@web.route("/")
-def home():
-    return "Bot is running 🚀"
+    # ⚠️ IMPORTANT: NO close_loop
+    app.run_polling()
 
 if __name__ == "__main__":
-    import threading
-
-    threading.Thread(target=lambda: asyncio.run(run_bot())).start()
-
-    web.run(host="0.0.0.0", port=PORT)
+    main()
+    
