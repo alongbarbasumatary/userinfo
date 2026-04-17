@@ -13,11 +13,10 @@ if not TOKEN:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
 
-    await update.message.reply_text(
-        f"""
+    text = f"""
 🤖 Info Bot
 
-🪪 Your Telegram Info
+🪪 Telegram User Info
 
 🆔 ID: {u.id}
 👤 Name: {u.first_name}
@@ -27,9 +26,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📌 Forward message → sender ID
 📞 Send contact → contact ID
 """
-    )
 
-# 🧠 message handler
+    await update.message.reply_text(text)
+
+# 🧠 handler
 async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
 
@@ -41,7 +41,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if msg.forward_from:
             await msg.reply_text(f"🆔 Sender ID: {msg.forward_from.id}")
 
-        # 📢 channel forward
+        # 📢 channel
         elif msg.forward_from_chat:
             await msg.reply_text(f"📢 Channel ID: {msg.forward_from_chat.id}")
 
@@ -49,12 +49,12 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif msg.contact:
             await msg.reply_text(f"📞 Contact ID: {msg.contact.user_id}")
 
-        # 🆔 normal
+        # 🆔 normal message
         else:
             await msg.reply_text(f"🆔 Your ID: {msg.from_user.id}")
 
-    except Exception:
-        await msg.reply_text("⚠️ Error processing message")
+    except:
+        await msg.reply_text("⚠️ Error")
 
 def main():
     app = Application.builder().token(TOKEN).build()
@@ -64,8 +64,8 @@ def main():
 
     print("🚀 Bot running...")
 
-    # 🔥 FIX Render asyncio crash
-    app.run_polling(close_loop=False)
+    # ⚠️ IMPORTANT: NO close_loop
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
