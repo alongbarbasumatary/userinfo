@@ -1,13 +1,17 @@
 import os
+import asyncio
+from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 TOKEN = os.getenv("BOT_TOKEN")
+PORT = int(os.environ.get("PORT", 10000))
 
 if not TOKEN:
     print("BOT_TOKEN missing")
     exit(1)
 
+# ---------- Telegram ----------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
 
@@ -23,12 +27,30 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(text)
 
-def main():
+async def run_bot():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
 
     print("🚀 Bot running...")
-    app.run_polling()
+
+    # IMPORTANT FIX
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+
+    # keep alive forever
+    await asyncio.Event().wait()
+
+# ---------- Flask ----------
+web = Flask(__name__)
+
+@web.route("/")
+def home():
+    return "Bot is running 🚀"
 
 if __name__ == "__main__":
-    main()
+    import threading
+
+    threading.Thread(target=lambda: asyncio.run(run_bot())).start()
+
+    web.run(host="0.0.0.0", port=PORT)
