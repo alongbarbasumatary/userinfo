@@ -36,29 +36,27 @@ def get_copy_keyboard(user_id: int, username: str = None, chat_id: int = None):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
     
-    text = f"""
-╔═══════════════════════════════╗
-║  🤖 <b>Advanced Info Bot</b>     ║
-╚═══════════════════════════════╝
+    text = f"""<b>Hi {u.first_name}! 👋</b>
 
-<b>👤 Your Profile:</b>
-{format_id("🆔 User ID", u.id)}
-{format_id("👤 First Name", u.first_name)}
-{format_id("📛 Last Name", u.last_name or "—")}
-{format_id("🔗 Username", f"@{u.username}" if u.username else "—")}
-{format_id("🌐 Language", u.language_code or "Unknown")}
+I'm an info extraction bot. Here's what I can do:
 
-<b>📌 Usage:</b>
-• Forward a message → Get sender ID
-• Send a contact → Get contact ID
-• Send any message → Get your ID
-• Use /info → Detailed user info
+<b>Your Profile</b>
+<code>User ID:</code> <code>{u.id}</code>
+<code>Name:</code> <code>{u.first_name} {u.last_name or ""}</code>
+<code>Username:</code> <code>@{u.username if u.username else "—"}</code>
+<code>Language:</code> <code>{u.language_code or "Unknown"}</code>
 
-<b>✨ Features:</b>
-✓ Copy IDs easily with buttons
-✓ Sender identification
-✓ Contact info extraction
-✓ Chat & Channel detection
+<b>How to Use</b>
+• <b>Forward a message</b> → Get the sender's ID
+• <b>Share a contact</b> → Extract contact details
+• <b>Send any message</b> → Get your ID & chat info
+• <b>/info</b> → Full detailed breakdown
+
+<b>Features</b>
+✨ One-tap ID copying
+✨ Automatic sender detection
+✨ Contact extraction
+✨ Channel forwarding detection
 """
     
     keyboard = get_copy_keyboard(u.id, u.username)
@@ -72,35 +70,29 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # User flags
     flags = []
     if u.is_bot:
-        flags.append("🤖 Bot")
+        flags.append("🤖")
     if u.is_premium:
-        flags.append("⭐ Premium")
+        flags.append("⭐")
     if not u.is_active:
-        flags.append("❌ Inactive")
+        flags.append("⏸")
     
-    flags_text = " | ".join(flags) if flags else "None"
+    flags_text = " ".join(flags) if flags else "—"
     
-    text = f"""
-╔═══════════════════════════════╗
-║  📊 <b>Detailed User Info</b>    ║
-╚═══════════════════════════════╝
+    text = f"""<b>User Details</b>
 
-<b>👤 User Details:</b>
-{format_id("🆔 User ID", u.id)}
-{format_id("👤 First Name", u.first_name)}
-{format_id("📛 Last Name", u.last_name or "—")}
-{format_id("🔗 Username", f"@{u.username}" if u.username else "—")}
-{format_id("🌐 Language Code", u.language_code or "Unknown")}
+<code>ID:</code> <code>{u.id}</code>
+<code>Name:</code> <code>{u.first_name} {u.last_name or ""}</code>
+<code>Username:</code> <code>@{u.username if u.username else "—"}</code>
+<code>Language:</code> <code>{u.language_code or "Unknown"}</code>
+<code>Status:</code> <code>{flags_text}</code>
 
-<b>🚩 Flags:</b>
-<code>{flags_text}</code>
+<b>Chat Details</b>
 
-<b>💬 Chat Details:</b>
-{format_id("💬 Chat ID", chat.id)}
-{format_id("💬 Chat Type", chat.type)}
-{format_id("💬 Chat Title", chat.title or "—")}
+<code>Chat ID:</code> <code>{chat.id}</code>
+<code>Type:</code> <code>{chat.type}</code>
+<code>Name:</code> <code>{chat.title or "—"}</code>
 
-<b>🕐 Timestamp:</b>
+<b>Timestamp</b>
 <code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}</code>
 """
     
@@ -109,22 +101,19 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # 📞 /contact command - Show how to extract contact info
 async def contact_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = """
-╔═══════════════════════════════╗
-║  📞 <b>Contact Info Guide</b>   ║
-╚═══════════════════════════════╝
+    text = """<b>Extract Contact Info</b>
 
-<b>📱 How to use:</b>
-1. Open your contacts
+<b>How to use:</b>
+1. Open your Telegram contacts
 2. Select a contact
-3. Share it with this bot
-4. Bot will show you contact details
+3. Tap "Share" and select this bot
+4. I'll extract all details for you
 
-<b>ℹ️ What you'll get:</b>
+<b>You'll get:</b>
 ✓ Contact User ID
-✓ Contact Name
-✓ Contact Phone Number
-✓ Copy-ready format
+✓ Full name
+✓ Phone number
+✓ All info in copyable format
 """
     
     await update.message.reply_text(text, parse_mode="HTML")
@@ -142,18 +131,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 👤 Forwarded from user
         if msg.forward_from:
             forwarded_user = msg.forward_from
-            text = f"""
-╔═══════════════════════════════╗
-║  👤 <b>Forwarded Message</b>    ║
-╚═══════════════════════════════╝
+            text = f"""<b>Forwarded Message</b>
 
-<b>📤 Original Sender:</b>
-{format_id("🆔 User ID", forwarded_user.id)}
-{format_id("👤 First Name", forwarded_user.first_name)}
-{format_id("📛 Last Name", forwarded_user.last_name or "—")}
-{format_id("🔗 Username", f"@{forwarded_user.username}" if forwarded_user.username else "—")}
+<b>Original Sender</b>
+<code>ID:</code> <code>{forwarded_user.id}</code>
+<code>Name:</code> <code>{forwarded_user.first_name} {forwarded_user.last_name or ""}</code>
+<code>Username:</code> <code>@{forwarded_user.username if forwarded_user.username else "—"}</code>
 
-<b>🕐 Forwarded At:</b>
+<b>Forwarded At</b>
 <code>{msg.forward_date.strftime('%Y-%m-%d %H:%M:%S UTC') if msg.forward_date else 'Unknown'}</code>
 """
             keyboard = get_copy_keyboard(forwarded_user.id, forwarded_user.username)
@@ -162,19 +147,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 📢 Forwarded from channel
         elif msg.forward_from_chat:
             channel = msg.forward_from_chat
-            text = f"""
-╔═══════════════════════════════╗
-║  📢 <b>Channel Forward</b>      ║
-╚═══════════════════════════════╝
+            text = f"""<b>Channel Forward</b>
 
-<b>📡 Channel Details:</b>
-{format_id("📢 Channel ID", channel.id)}
-{format_id("📛 Channel Name", channel.title or "—")}
-{format_id("🔗 Channel Username", f"@{channel.username}" if channel.username else "—")}
-{format_id("📊 Channel Type", channel.type)}
+<b>Channel Details</b>
+<code>ID:</code> <code>{channel.id}</code>
+<code>Name:</code> <code>{channel.title or "—"}</code>
+<code>Username:</code> <code>@{channel.username if channel.username else "—"}</code>
+<code>Type:</code> <code>{channel.type}</code>
 
-<b>📌 Original Message ID:</b>
-<code>{msg.forward_from_message_id or 'N/A'}</code>
+<b>Original Message</b>
+<code>Message ID:</code> <code>{msg.forward_from_message_id or 'N/A'}</code>
 """
             keyboard = get_copy_keyboard(None, channel.username, channel.id)
             await msg.reply_text(text, reply_markup=keyboard, parse_mode="HTML")
@@ -182,49 +164,41 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 📞 Contact shared
         elif msg.contact:
             contact = msg.contact
-            text = f"""
-╔═══════════════════════════════╗
-║  📞 <b>Contact Info</b>        ║
-╚═══════════════════════════════╝
+            text = f"""<b>Contact Details</b>
 
-<b>👤 Contact Details:</b>
-{format_id("📞 Phone", contact.phone_number)}
-{format_id("👤 First Name", contact.first_name)}
-{format_id("📛 Last Name", contact.last_name or "—")}
-{format_id("🆔 User ID", contact.user_id or "Not linked")}
+<b>Contact Info</b>
+<code>Phone:</code> <code>{contact.phone_number}</code>
+<code>Name:</code> <code>{contact.first_name} {contact.last_name or ""}</code>
+<code>User ID:</code> <code>{contact.user_id or "Not linked"}</code>
 
-<b>📌 Shared by:</b>
-{format_id("🆔 Your ID", u.id)}
-{format_id("💬 Chat ID", chat.id)}
+<b>Shared By</b>
+<code>Your ID:</code> <code>{u.id}</code>
+<code>Chat ID:</code> <code>{chat.id}</code>
 """
             keyboard = get_copy_keyboard(contact.user_id or u.id, None, chat.id)
             await msg.reply_text(text, reply_markup=keyboard, parse_mode="HTML")
         
         # 🆔 Regular message
         else:
-            text = f"""
-╔═══════════════════════════════╗
-║  🆔 <b>Your ID</b>            ║
-╚═══════════════════════════════╝
+            text = f"""<b>Your Information</b>
 
-<b>👤 Sender Info:</b>
-{format_id("🆔 User ID", u.id)}
-{format_id("👤 First Name", u.first_name)}
-{format_id("📛 Last Name", u.last_name or "—")}
-{format_id("🔗 Username", f"@{u.username}" if u.username else "—")}
+<b>Sender</b>
+<code>ID:</code> <code>{u.id}</code>
+<code>Name:</code> <code>{u.first_name} {u.last_name or ""}</code>
+<code>Username:</code> <code>@{u.username if u.username else "—"}</code>
 
-<b>💬 Chat Info:</b>
-{format_id("💬 Chat ID", chat.id)}
-{format_id("💬 Chat Type", chat.type)}
+<b>Chat</b>
+<code>ID:</code> <code>{chat.id}</code>
+<code>Type:</code> <code>{chat.type}</code>
 
-<b>📌 Message ID:</b>
-<code>{msg.message_id}</code>
+<b>Message</b>
+<code>ID:</code> <code>{msg.message_id}</code>
 """
             keyboard = get_copy_keyboard(u.id, u.username, chat.id)
             await msg.reply_text(text, reply_markup=keyboard, parse_mode="HTML")
     
     except Exception as e:
-        await msg.reply_text(f"⚠️ Error: <code>{html.escape(str(e))}</code>", parse_mode="HTML")
+        await msg.reply_text(f"<b>Error</b>\n<code>{html.escape(str(e))}</code>", parse_mode="HTML")
 
 # 📋 Callback handler for copy buttons
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -247,7 +221,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await query.edit_message_text(text, parse_mode="HTML")
 
-def main():
+async def main():
+    """Main async entry point for the bot"""
     app = Application.builder().token(TOKEN).build()
     
     # Handlers
@@ -257,10 +232,28 @@ def main():
     app.add_handler(CallbackQueryHandler(button_callback))
     app.add_handler(MessageHandler(filters.ALL, handle_message))
     
-    print("🚀 Advanced Info Bot started!")
+    print("🚀 Advanced Info Bot initializing...")
     print("📋 Features: /start, /info, /contact")
     
-    app.run_polling()
+    # Initialize and start the bot
+    async with app:
+        await app.initialize()
+        await app.start()
+        print("✅ Bot started successfully!")
+        print("🔄 Running in polling mode...")
+        
+        try:
+            await app.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+        except KeyboardInterrupt:
+            print("🛑 Received interrupt signal")
+        finally:
+            await app.stop()
+            await app.shutdown()
+            print("🛑 Bot stopped cleanly")
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("🛑 Bot terminated by user")
